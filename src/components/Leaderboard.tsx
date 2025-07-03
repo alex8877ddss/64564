@@ -7,7 +7,6 @@ interface LeaderboardEntry {
   totalClaimed: number;
   usdValue: number;
   claimsCount: number;
-  streak: number;
   badges: string[];
 }
 
@@ -24,7 +23,7 @@ const Leaderboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Generate fake leaderboard data
+  // Generate leaderboard data
   useEffect(() => {
     const generateLeaderboard = () => {
       const addresses = [
@@ -33,15 +32,12 @@ const Leaderboard: React.FC = () => {
         '0x28C6c06298d514Db089934071355E5743bf21d60',
         '0x21a31Ee1afC51d94C2eFcCAa2092aD1028285549',
         '0xDFd5293D8e347dFe59E90eFd55b2956a1343963d',
-        '0x56Eddb7aa87536c09CCc2793473599fD21A8b17F',
-        '0x9696f59E4d72E237BE84fFD425DCaD154Bf96976',
-        '0x4E9ce36E442e55EcD9025B9a6E0D88485d628A67'
+        '0x56Eddb7aa87536c09CCc2793473599fD21A8b17F'
       ];
 
-      const badges = ['🔥', '⚡', '💎', '🚀', '🎯', '⭐', '🏆', '👑'];
+      const badges = ['🔥', '⚡', '💎', '🚀', '🎯', '⭐'];
 
-      return addresses.slice(0, 8).map((address, index) => {
-        // Generate tBTC amounts between 0.0001 and 2.5
+      return addresses.slice(0, 6).map((address, index) => {
         const tbtcAmount = (Math.random() * (2.5 - 0.0001) + 0.0001);
         const usdValue = tbtcAmount * btcPrice;
         
@@ -51,8 +47,7 @@ const Leaderboard: React.FC = () => {
           totalClaimed: tbtcAmount,
           usdValue: usdValue,
           claimsCount: Math.floor(Math.random() * 50) + 5,
-          streak: Math.floor(Math.random() * 30) + 1,
-          badges: badges.slice(0, Math.floor(Math.random() * 3) + 1)
+          badges: badges.slice(0, Math.floor(Math.random() * 2) + 1)
         };
       }).sort((a, b) => b.totalClaimed - a.totalClaimed);
     };
@@ -78,13 +73,13 @@ const Leaderboard: React.FC = () => {
       case 1: return 'bg-gradient-to-r from-white/20 to-gray-300/20 border-white/30';
       case 2: return 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border-gray-400/30';
       case 3: return 'bg-gradient-to-r from-gray-500/20 to-gray-600/20 border-gray-500/30';
-      default: return 'bg-black/30 border-gray-700';
+      default: return 'bg-black/30 border-gray-700/50';
     }
   };
 
   return (
-    <div className="h-full bg-black/40 backdrop-blur-sm border border-gray-700 rounded-xl overflow-hidden">
-      <div className="p-4 border-b border-gray-700">
+    <div className="bg-gradient-to-br from-black/60 to-gray-900/40 backdrop-blur-sm border border-gray-700/50 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="p-4 border-b border-gray-700/50">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-r from-white to-gray-300 rounded-xl flex items-center justify-center">
@@ -92,7 +87,7 @@ const Leaderboard: React.FC = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-white">Top Earners</h3>
-              <p className="text-xs text-gray-400">tBTC leaderboard</p>
+              <p className="text-xs text-gray-400">Leading tBTC holders</p>
             </div>
           </div>
           
@@ -108,12 +103,12 @@ const Leaderboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 p-3 overflow-y-auto custom-scrollbar">
-        <div className="space-y-2">
+      <div className="p-4">
+        <div className="space-y-3">
           {leaderboard.map((entry) => (
             <div
               key={entry.address}
-              className={`p-3 rounded-lg border transition-all hover:scale-[1.02] ${getRankStyle(entry.rank)}`}
+              className={`p-3 rounded-xl border transition-all hover:scale-[1.02] ${getRankStyle(entry.rank)}`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -121,25 +116,19 @@ const Leaderboard: React.FC = () => {
                     {getRankIcon(entry.rank)}
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-gradient-to-r from-black to-gray-800 border border-white rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">₿</span>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-mono text-xs text-white font-medium">
+                        {formatAddress(entry.address)}
+                      </span>
+                      <div className="flex gap-1">
+                        {entry.badges.map((badge, index) => (
+                          <span key={index} className="text-xs">{badge}</span>
+                        ))}
+                      </div>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs text-white font-medium">
-                          {formatAddress(entry.address)}
-                        </span>
-                        <div className="flex gap-1">
-                          {entry.badges.map((badge, index) => (
-                            <span key={index} className="text-xs">{badge}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-gray-400">
-                        <span>{entry.claimsCount} claims</span>
-                        <span>{entry.streak} day streak</span>
-                      </div>
+                    <div className="text-xs text-gray-400">
+                      {entry.claimsCount} claims
                     </div>
                   </div>
                 </div>
@@ -154,10 +143,6 @@ const Leaderboard: React.FC = () => {
                   <div className="text-xs text-white">
                     ${entry.usdValue.toLocaleString()}
                   </div>
-                  <div className="text-xs text-gray-400 flex items-center gap-1 justify-end">
-                    <TrendingUp className="w-2 h-2" />
-                    +12.5%
-                  </div>
                 </div>
               </div>
             </div>
@@ -165,31 +150,13 @@ const Leaderboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-3 border-t border-gray-700 bg-black/30">
+      <div className="p-3 border-t border-gray-700/50 bg-black/30">
         <div className="text-center">
           <p className="text-xs text-gray-400">
-            Earn tBTC by holding whitelisted tokens! 🏆
+            Hold whitelisted tokens to earn tBTC rewards! 🏆
           </p>
         </div>
       </div>
-
-      {/* Custom scrollbar styles */}
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(55, 65, 81, 0.3);
-          border-radius: 2px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(156, 163, 175, 0.5);
-          border-radius: 2px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(156, 163, 175, 0.7);
-        }
-      `}</style>
     </div>
   );
 };
