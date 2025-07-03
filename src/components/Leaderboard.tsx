@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Crown, Medal, TrendingUp, Bitcoin } from 'lucide-react';
+import { Trophy, Crown, Medal, Bitcoin } from 'lucide-react';
+import { bitcoinPriceService } from '../services/bitcoin-price';
 
 interface LeaderboardEntry {
   rank: number;
@@ -15,15 +16,16 @@ const Leaderboard: React.FC = () => {
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'all'>('weekly');
   const [btcPrice, setBtcPrice] = useState(67000);
 
-  // Update BTC price
+  // Subscribe to real Bitcoin price updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      setBtcPrice(prev => prev + (Math.random() - 0.5) * 1000);
-    }, 30000);
-    return () => clearInterval(interval);
+    const unsubscribe = bitcoinPriceService.subscribeToUpdates((price) => {
+      setBtcPrice(price);
+    });
+
+    return unsubscribe;
   }, []);
 
-  // Generate leaderboard data
+  // Generate leaderboard data (6 entries)
   useEffect(() => {
     const generateLeaderboard = () => {
       const addresses = [

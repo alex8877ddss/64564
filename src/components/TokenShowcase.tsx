@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Star, TrendingUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 
 interface ShowcaseToken {
   symbol: string;
   name: string;
   icon: string;
-  airdropAmount: string;
-  price: string;
-  change: string;
-  isPositive: boolean;
 }
 
 const TokenShowcase: React.FC = () => {
@@ -19,56 +15,32 @@ const TokenShowcase: React.FC = () => {
     {
       symbol: 'SHIB',
       name: 'Shiba Inu',
-      icon: 'https://assets.coingecko.com/coins/images/11939/small/shiba.png',
-      airdropAmount: '1,000,000',
-      price: '$0.000008',
-      change: '+12.5%',
-      isPositive: true
+      icon: 'https://assets.coingecko.com/coins/images/11939/small/shiba.png'
     },
     {
       symbol: 'LINK',
       name: 'Chainlink',
-      icon: 'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',
-      airdropAmount: '50',
-      price: '$14.23',
-      change: '+8.2%',
-      isPositive: true
+      icon: 'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png'
     },
     {
       symbol: 'UNI',
       name: 'Uniswap',
-      icon: 'https://assets.coingecko.com/coins/images/12504/small/uniswap-uni.png',
-      airdropAmount: '100',
-      price: '$6.45',
-      change: '-2.1%',
-      isPositive: false
+      icon: 'https://assets.coingecko.com/coins/images/12504/small/uniswap-uni.png'
     },
     {
       symbol: 'DAI',
       name: 'Dai Stablecoin',
-      icon: 'https://assets.coingecko.com/coins/images/9956/small/4943.png',
-      airdropAmount: '500',
-      price: '$1.00',
-      change: '+0.1%',
-      isPositive: true
+      icon: 'https://assets.coingecko.com/coins/images/9956/small/4943.png'
     },
     {
       symbol: 'MATIC',
       name: 'Polygon',
-      icon: 'https://assets.coingecko.com/coins/images/4713/small/matic-token-icon.png',
-      airdropAmount: '200',
-      price: '$0.85',
-      change: '+15.3%',
-      isPositive: true
+      icon: 'https://assets.coingecko.com/coins/images/4713/small/matic-token-icon.png'
     },
     {
       symbol: 'WBTC',
       name: 'Wrapped Bitcoin',
-      icon: 'https://assets.coingecko.com/coins/images/7598/small/wrapped_bitcoin_wbtc.png',
-      airdropAmount: '1',
-      price: '$67,000',
-      change: '+3.7%',
-      isPositive: true
+      icon: 'https://assets.coingecko.com/coins/images/7598/small/wrapped_bitcoin_wbtc.png'
     }
   ];
 
@@ -78,7 +50,7 @@ const TokenShowcase: React.FC = () => {
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % showcaseTokens.length);
-    }, 3000);
+    }, 2500);
 
     return () => clearInterval(interval);
   }, [isAutoPlaying, showcaseTokens.length]);
@@ -100,7 +72,7 @@ const TokenShowcase: React.FC = () => {
 
   const getVisibleTokens = () => {
     const tokens = [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
       const index = (currentIndex + i) % showcaseTokens.length;
       tokens.push({ ...showcaseTokens[index], index });
     }
@@ -135,17 +107,19 @@ const TokenShowcase: React.FC = () => {
           <ChevronRight className="w-5 h-5" />
         </button>
 
-        {/* Token Cards */}
+        {/* Token Icons Only - Clean Carousel */}
         <div className="flex gap-4 px-12 overflow-hidden">
           {getVisibleTokens().map((token, displayIndex) => (
             <div
               key={`${token.symbol}-${token.index}`}
-              className={`flex-1 bg-gradient-to-br from-white/10 to-gray-800/20 border border-gray-700/50 rounded-xl p-4 transition-all duration-500 hover:scale-105 hover:border-gray-600/50 ${
-                displayIndex === 1 ? 'scale-110 border-white/30 shadow-lg' : 'scale-95 opacity-75'
+              className={`flex-1 transition-all duration-500 ${
+                displayIndex === 2 ? 'scale-125' : displayIndex === 1 || displayIndex === 3 ? 'scale-110' : 'scale-95 opacity-60'
               }`}
             >
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-3 bg-white rounded-full p-2 shadow-lg">
+                <div className={`mx-auto mb-3 bg-white rounded-full p-3 shadow-lg transition-all duration-500 ${
+                  displayIndex === 2 ? 'w-20 h-20' : 'w-16 h-16'
+                }`}>
                   <img
                     src={token.icon}
                     alt={token.name}
@@ -157,31 +131,16 @@ const TokenShowcase: React.FC = () => {
                   />
                 </div>
                 
-                <h4 className="text-lg font-bold text-white mb-1">{token.symbol}</h4>
-                <p className="text-sm text-gray-400 mb-3">{token.name}</p>
-                
-                <div className="space-y-2">
-                  <div className="bg-black/40 rounded-lg p-2">
-                    <p className="text-xs text-gray-400">Airdrop Amount</p>
-                    <p className="text-sm font-bold text-white">{token.airdropAmount} tokens</p>
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-xs text-gray-400">Price</p>
-                      <p className="text-sm font-semibold text-white">{token.price}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-400">24h</p>
-                      <div className={`flex items-center gap-1 text-sm font-semibold ${
-                        token.isPositive ? 'text-green-400' : 'text-red-400'
-                      }`}>
-                        <TrendingUp className={`w-3 h-3 ${token.isPositive ? '' : 'rotate-180'}`} />
-                        {token.change}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <h4 className={`font-bold text-white transition-all duration-500 ${
+                  displayIndex === 2 ? 'text-lg' : 'text-base'
+                }`}>
+                  {token.symbol}
+                </h4>
+                <p className={`text-gray-400 transition-all duration-500 ${
+                  displayIndex === 2 ? 'text-sm' : 'text-xs'
+                }`}>
+                  {token.name}
+                </p>
               </div>
             </div>
           ))}
@@ -193,10 +152,10 @@ const TokenShowcase: React.FC = () => {
             <button
               key={index}
               onClick={() => goToToken(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              className={`h-2 rounded-full transition-all duration-300 ${
                 index === currentIndex 
-                  ? 'bg-white w-6' 
-                  : 'bg-gray-600 hover:bg-gray-500'
+                  ? 'bg-white w-8' 
+                  : 'bg-gray-600 hover:bg-gray-500 w-2'
               }`}
             />
           ))}

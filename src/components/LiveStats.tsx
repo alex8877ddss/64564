@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Clock, Activity, Bitcoin } from 'lucide-react';
+import { Clock, Activity, Bitcoin } from 'lucide-react';
+import { bitcoinPriceService } from '../services/bitcoin-price';
 
 interface StatEntry {
   id: string;
@@ -16,39 +17,34 @@ const LiveStats: React.FC = () => {
   const [usedAddresses, setUsedAddresses] = useState<Set<string>>(new Set());
   const [btcPrice, setBtcPrice] = useState(67000);
 
-  // Real Ethereum addresses pool (verified addresses from Etherscan)
+  // Real Ethereum addresses pool
   const realAddressPool = [
     '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
     '0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE',
-    '0x28C6c06298d514Db089934071355E5743bf21d60',
-    '0x21a31Ee1afC51d94C2eFcCAa2092aD1028285549'
+    '0x28C6c06298d514Db089934071355E5743bf21d60'
   ];
 
-  // Update BTC price
+  // Subscribe to real Bitcoin price updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      setBtcPrice(prev => prev + (Math.random() - 0.5) * 1000);
-    }, 30000);
-    return () => clearInterval(interval);
+    const unsubscribe = bitcoinPriceService.subscribeToUpdates((price) => {
+      setBtcPrice(price);
+    });
+
+    return unsubscribe;
   }, []);
 
   const generateRealClaim = (): StatEntry => {
-    // Get available addresses (not used recently)
     const availableAddresses = realAddressPool.filter(addr => !usedAddresses.has(addr));
     
-    // If all addresses used, reset the set
     if (availableAddresses.length === 0) {
       setUsedAddresses(new Set());
       return generateRealClaim();
     }
 
     const randomAddress = availableAddresses[Math.floor(Math.random() * availableAddresses.length)];
-    
-    // Generate tBTC amount between 0.0001 and 0.26
     const tbtcAmount = (Math.random() * (0.26 - 0.0001) + 0.0001);
     const usdValue = tbtcAmount * btcPrice;
 
-    // Mark address as used
     setUsedAddresses(prev => new Set([...prev, randomAddress]));
 
     return {
@@ -63,12 +59,11 @@ const LiveStats: React.FC = () => {
   };
 
   useEffect(() => {
-    // Initialize with fewer claims (3 instead of 4)
+    // Initialize with 3 claims
     const initialClaims = Array.from({ length: 3 }, () => {
       const claim = generateRealClaim();
       claim.isNew = false;
-      // Set random timestamps in the past
-      claim.timestamp = new Date(Date.now() - Math.random() * 3600000); // Random time in last hour
+      claim.timestamp = new Date(Date.now() - Math.random() * 3600000);
       return claim;
     });
     setRecentClaims(initialClaims);
@@ -77,14 +72,13 @@ const LiveStats: React.FC = () => {
     const interval = setInterval(() => {
       const newClaim = generateRealClaim();
       setRecentClaims(prev => {
-        const updated = [newClaim, ...prev.slice(0, 2)]; // Keep max 3 claims
-        // Mark old claims as not new
+        const updated = [newClaim, ...prev.slice(0, 2)];
         return updated.map((claim, index) => ({
           ...claim,
           isNew: index === 0
         }));
       });
-    }, 120000); // 120 seconds
+    }, 120000);
 
     return () => clearInterval(interval);
   }, []);

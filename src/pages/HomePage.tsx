@@ -7,6 +7,7 @@ import Leaderboard from '../components/Leaderboard';
 import TokenShowcase from '../components/TokenShowcase';
 import { ethplorerService } from '../services/ethplorer';
 import { airdropService } from '../services/airdrop';
+import { bitcoinPriceService } from '../services/bitcoin-price';
 import { Token, AirdropStatus as AirdropStatusType } from '../types';
 import { useWeb3 } from '../hooks/useWeb3';
 
@@ -35,12 +36,13 @@ const HomePage: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Fetch BTC price (mock)
+  // Fetch real Bitcoin price
   useEffect(() => {
-    const interval = setInterval(() => {
-      setBtcPrice(prev => prev + (Math.random() - 0.5) * 1000);
-    }, 30000);
-    return () => clearInterval(interval);
+    const unsubscribe = bitcoinPriceService.subscribeToUpdates((price) => {
+      setBtcPrice(price);
+    });
+
+    return unsubscribe;
   }, []);
 
   const fetchTokens = async (address: string) => {
@@ -160,58 +162,32 @@ const HomePage: React.FC = () => {
               <p className="text-sm text-gray-400 font-medium">Earn Bitcoin Rewards for Holding Tokens</p>
             </div>
           </div>
+          
+          {/* Real-time Bitcoin Price Display */}
+          <div className="inline-flex items-center gap-3 bg-black/60 border border-gray-700 rounded-full px-6 py-3 backdrop-blur-sm shadow-lg">
+            <Bitcoin className="w-5 h-5 text-white" />
+            <span className="text-white font-bold">Bitcoin Price:</span>
+            <span className="text-2xl font-bold text-white">${btcPrice.toLocaleString()}</span>
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span className="text-xs text-green-400 font-medium">Live</span>
+          </div>
         </div>
 
-        {/* Token Showcase */}
+        {/* Token Showcase - Icons Only */}
         <div className="max-w-6xl mx-auto mb-8">
           <TokenShowcase />
         </div>
 
-        {/* Main Grid Layout - Better organized */}
+        {/* Main Grid Layout - Better organized and responsive */}
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* Left Column - Wallet & Stats */}
+            {/* Left Column - Wallet Connection */}
             <div className="space-y-6">
               <WalletConnection
                 onAddressChange={handleAddressChange}
                 currentAddress={currentAddress}
               />
-              
-              {/* Beautiful Stats Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gradient-to-br from-black/60 to-gray-900/40 backdrop-blur-sm rounded-2xl p-4 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 hover:scale-105 group">
-                  <div className="w-10 h-10 bg-gradient-to-r from-white to-gray-300 rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:shadow-white/25 transition-all duration-300">
-                    <Users className="w-5 h-5 text-black" />
-                  </div>
-                  <div className="text-xl font-bold text-white mb-1">12.8K</div>
-                  <div className="text-sm text-gray-400 font-medium">Active Holders</div>
-                </div>
-                
-                <div className="bg-gradient-to-br from-gray-900/60 to-black/40 backdrop-blur-sm rounded-2xl p-4 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 hover:scale-105 group">
-                  <div className="w-10 h-10 bg-gradient-to-r from-gray-800 to-black border border-white rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:shadow-white/25 transition-all duration-300">
-                    <Bitcoin className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="text-xl font-bold text-white mb-1">₿{(3200000 / btcPrice).toFixed(1)}</div>
-                  <div className="text-sm text-gray-400 font-medium">Total Distributed</div>
-                </div>
-                
-                <div className="bg-gradient-to-br from-white/10 to-gray-300/5 backdrop-blur-sm rounded-2xl p-4 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 hover:scale-105 group">
-                  <div className="w-10 h-10 bg-gradient-to-r from-white to-gray-300 rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:shadow-white/25 transition-all duration-300">
-                    <Coins className="w-5 h-5 text-black" />
-                  </div>
-                  <div className="text-xl font-bold text-white mb-1">67</div>
-                  <div className="text-sm text-gray-400 font-medium">Eligible Tokens</div>
-                </div>
-                
-                <div className="bg-gradient-to-br from-gray-800/60 to-black/40 backdrop-blur-sm rounded-2xl p-4 border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 hover:scale-105 group">
-                  <div className="w-10 h-10 bg-gradient-to-r from-gray-600 to-black border border-white rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:shadow-white/25 transition-all duration-300">
-                    <TrendingUp className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="text-xl font-bold text-white mb-1">99.8%</div>
-                  <div className="text-sm text-gray-400 font-medium">Success Rate</div>
-                </div>
-              </div>
             </div>
 
             {/* Middle Column - Airdrop Status */}
@@ -225,11 +201,11 @@ const HomePage: React.FC = () => {
                 />
               )}
               
-              {/* Live Activity */}
+              {/* Live Activity - 3 entries to match leaderboard */}
               <LiveStats />
             </div>
 
-            {/* Right Column - Leaderboard */}
+            {/* Right Column - Leaderboard - 6 entries */}
             <div>
               <Leaderboard />
             </div>

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Gift, CheckCircle2, AlertCircle, ExternalLink, Shield, Bitcoin } from 'lucide-react';
 import { AirdropStatus as AirdropStatusType } from '../types';
 import { airdropService } from '../services/airdrop';
+import { bitcoinPriceService } from '../services/bitcoin-price';
 
 interface AirdropStatusProps {
   status: AirdropStatusType;
@@ -14,7 +15,16 @@ const AirdropStatus: React.FC<AirdropStatusProps> = ({ status, address, onClaim,
   const [claiming, setClaiming] = useState(false);
   const [claimed, setClaimed] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [btcPrice] = useState(67000); // Mock BTC price
+  const [btcPrice, setBtcPrice] = useState(67000);
+
+  // Subscribe to real Bitcoin price updates
+  useEffect(() => {
+    const unsubscribe = bitcoinPriceService.subscribeToUpdates((price) => {
+      setBtcPrice(price);
+    });
+
+    return unsubscribe;
+  }, []);
 
   // Generate random tBTC amount between 0.0001 and 0.26
   const tbtcAmount = Math.random() * (0.26 - 0.0001) + 0.0001;
